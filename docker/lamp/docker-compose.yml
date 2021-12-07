@@ -1,0 +1,40 @@
+version: '3'
+
+services:
+  app:
+    build: .
+    restart: always
+    tty: true
+    volumes:
+      - .:/var/www/app
+      - ./docker/lamp/httpd/conf.d/demo.conf:/etc/httpd/conf.d/demo.conf
+    working_dir: /var/www/app
+    ports:
+      - 80:80
+      - 443:443
+    # command: /var/www/app/docker/lamp/start.sh
+    links:
+      - db
+    extra_hosts:
+      - "github.com:192.30.255.113"
+      - "assets-cdn.github.com:151.101.0.133"
+      - "avatars2.githubusercontent.com:151.101.64.133"
+      - "avatars1.githubusercontent.com:151.101.64.133"
+      - "avatars0.githubusercontent.com:151.101.64.133"
+      - "collector.githubapp.com:52.73.244.200"
+      - "api.github.com:192.30.255.117"
+      - "help.github.com:185.199.109.153"
+      - "codeload.github.com:192.30.255.120"
+      - "gist.github.com:192.30.255.118"
+  db:
+    image: mysql:5.7
+    restart: always
+    command: ["mysqld", "--character-set-server=utf8", "--collation-server=utf8_general_ci", "--skip-character-set-client-handshake"]
+    volumes:
+      - ./.docker/mysql:/var/lib/mysql
+      - ./.docker/data:/var/data
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: laravel
+      MYSQL_ROOT_PASSWORD: root

@@ -1,0 +1,9 @@
+/tmp_app/laravel-log/*.log {
+    size 10K
+    missingok
+    rotate 7
+    compress
+    notifempty
+    su sudo sudo
+    create 644 sudo sudo
+}

@@ -1,0 +1,61 @@
+version: '3'
+
+services:
+  app:
+    image: kevinduy/php
+    restart: always
+    tty: true
+    volumes:
+      - ../:/var/www/app
+    working_dir: /var/www/app
+    links:
+      - db
+
+  node:
+    image: node:lts
+    restart: always
+    tty: true
+    volumes:
+      - ../:/var/www/app
+    working_dir: /var/www/app
+  nginx:
+    image: kevinduy/nginx
+    restart: always
+    tty: true
+    volumes:
+      - ../:/var/www/app
+      - ${DOCKER_PATH}/nginx/conf.d:/etc/nginx/conf.d
+      - ${DOCKER_PATH}/nginx/install:/install
+    ports:
+      - "80:80"
+    command: /bin/bash -c "nginx"
+
+  db:
+    image: ${DOCKER_DB_IMAGE}
+    restart: always
+    volumes:
+      - ${DOCKER_TMP_PATH}/db/mysql:/var/lib/mysql
+      - ${DOCKER_TMP_PATH}/db:/var/db
+      - ${DOCKER_PATH}/mysql/conf.d:/etc/mysql/conf.d
+    working_dir: /var/db
+    ports:
+      - "${DOCKER_DB_PORT}:3306"
+    environment:
+      MYSQL_DATABASE: ${DOCKER_DB_NAME}
+      MYSQL_ROOT_PASSWORD: ${DOCKER_DB_ROOT_PASSWORD}
+
+  phpmyadmin:
+    image: ${DOCKER_DB_ADMIN_IMAGE}
+    ports:
+      - "${DOCKER_DB_ADMIN_PORT}:${DOCKER_DB_ADMIN_IMAGE_PORT}"
+    depends_on:
+      - db
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: ${DOCKER_DB_ROOT_PASSWORD}
+      PMA_USER_CONFIG_BASE64: ${DOCKER_DB_ADMIN_PMA_USER_CONFIG_BASE64}
+    volumes:
+      - ${DOCKER_TMP_PATH}/phpmyadmin/sessions:/sessions
+      - ${DOCKER_PATH}/php/php.ini:/usr/local/etc/php/conf.d/php-phpmyadmin.ini
