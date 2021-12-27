@@ -1,5 +1,9 @@
 <?php
 
+task('deploy:current_deploy', [
+    'deploy:cron',
+]);
+
 desc('Cron on localhost');
 task('deploy:cron', function () {
     $result = test('[ -d {{deploy_path}}/current ] && [ -L {{deploy_path}}/current ]');
